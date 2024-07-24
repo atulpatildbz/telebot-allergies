@@ -219,7 +219,7 @@ def schedule_reminder(application: Application):
 
 def log_to_sheets(data):
     # e.g. {'current_score': 'evening', 'sleep_score': 5, 'morning_score': 4, 'afternoon_score': 3, 'evening_score': 2, 'symptoms': ['itchy'], 'medication': 'no', 'activities': ['indoors'], 'notes': 'none'}
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.datetime.now(pytz.timezone('Asia/Kolkata')).strftime("%Y-%m-%d %H:%M:%S")
     row = [
         now,
         data.get('sleep_score', ''),
