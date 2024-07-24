@@ -7,6 +7,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, ConversationHandler, CallbackQueryHandler
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import threading
 
 # Enable logging
 logging.basicConfig(
@@ -25,6 +27,22 @@ sheet = client.open_by_key(os.getenv("GOOGLE_SHEET_ID")).sheet1
 
 # Bot states
 ALLERGY_SCORE, SYMPTOMS, MEDICATION, ACTIVITIES, NOTES = range(5)
+
+# Define the health check server
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(b"OK")
+
+def run_health_check_server(port):
+    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+    server.serve_forever()
+
+# Start the health check server in a separate thread
+health_check_port = int(os.getenv("PORT", 8000))
+threading.Thread(target=run_health_check_server, args=(health_check_port,), daemon=True).start()
 
 async def start(update: Update, context: CallbackContext) -> int:
     await update.message.reply_text("Let's log your allergy data for today.")
